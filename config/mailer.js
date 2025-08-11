@@ -12,7 +12,20 @@ const transporter = nodemailer.createTransport({
 
 async function sendMail({ to, subject, text, html }) {
   const from = process.env.MAIL_FROM || process.env.MAIL_USER;
-  return transporter.sendMail({ from, to, subject, text, html });
+
+  try {
+    const info = await transporter.sendMail({ from, to, subject, text, html });
+    console.log('Email sent:', info);
+    return info;
+  } catch (error) {
+    console.error('SMTP sendMail failed:', {
+      message: error.message,
+      code: error.code,
+      command: error.command,
+      response: error.response
+    });
+    throw error; // so the calling function still knows it failed
+  }
 }
 
 module.exports = { sendMail };
