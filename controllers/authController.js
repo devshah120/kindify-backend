@@ -130,7 +130,7 @@ exports.login = async (req, res) => {
   // Check if user exists, otherwise create with default role
   let user = await User.findOne({ email });
   if (!user) {
-    user = await User.create({ email, role: 'user' });
+    user = await User.create({ email, role: 'User' });
   }
 
   // Remove old OTPs for this email
