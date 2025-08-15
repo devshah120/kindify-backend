@@ -3,6 +3,7 @@ const Otp = require('../models/Otp');
 const generateOtp = require('../utils/generateOtp');
 const { sendMail } = require('../config/mailer');
 const jwt = require('jsonwebtoken');
+const upload = require('../config/multer');
 
 const OTP_EXPIRE_SECONDS = parseInt(process.env.OTP_EXPIRE_SECONDS || '300', 10);
 
@@ -118,6 +119,42 @@ async function sendOtpEmail(toEmail, otp, userName) {
 
 //   return res.json({ message: 'Account created successfully' });
 // };
+
+
+
+
+// POST /trust/register
+exports.registerTrust = async (req, res) => {
+  const { trustName, adminName, mobile, email, darpanId } = req.body;
+
+  if (!trustName || !adminName || !mobile || !email || !darpanId) {
+    return res.status(400).json({ message: 'All trust details are required' });
+  }
+
+  // File check
+  if (!req.file) {
+    return res.status(400).json({ message: 'Darpan Certificate file is required' });
+  }
+
+  const existing = await User.findOne({ $or: [{ email }, { mobile }] });
+  if (existing) {
+    return res.status(409).json({ message: 'Email or mobile already registered' });
+  }
+
+  await User.create({
+    trustName,
+    adminName,
+    mobile,
+    email,
+    darpanId,
+    darpanCertificate: req.file.filename, // store file name
+    role: 'Trust'
+  });
+
+  return res.json({
+    message: 'We are verifying your data and will get back to you within 24 hours.'
+  });
+};
 
 // Login: accept email or mobile, find user, issue OTP to user's email
 // Login or register: send OTP only

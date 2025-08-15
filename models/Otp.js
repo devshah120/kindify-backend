@@ -4,7 +4,7 @@ const otpSchema = new mongoose.Schema({
   email: { type: String, lowercase: true, trim: true, required: true },
   mobile: { type: String, trim: true, required: false },
   otp: { type: String, required: true },
-  role: { type: String, enum: ['User', 'NGO'], required: true },
+  role: { type: String, enum: ['User', 'Trust'], required: true },
   createdAt: { type: Date, default: Date.now }
 });
 
