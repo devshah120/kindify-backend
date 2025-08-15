@@ -159,16 +159,30 @@ exports.registerTrust = async (req, res) => {
 // Login: accept email or mobile, find user, issue OTP to user's email
 // Login or register: send OTP only
 exports.login = async (req, res) => {
-  const { email } = req.body;
+  const { email, role } = req.body;
   if (!email) {
     return res.status(400).json({ message: 'email is required' });
   }
-
-  // Check if user exists, otherwise create with default role
-  let user = await User.findOne({ email });
-  if (!user) {
-    user = await User.create({ email, role: 'User' });
+  if (!role) {
+    return res.status(400).json({ message: 'role is required' });
   }
+
+let user = await User.findOne({ email });
+
+if (!user) {
+  if (role === 'User') {
+    user = await User.create({ email, role: 'User' });
+  } else if (role === 'Trust') {
+    return res.status(400).json({ message: 'Please register first as Trust' });
+  } else {
+    return res.status(400).json({ message: 'Invalid role' });
+  }
+} else {
+  // User exists — verify role match
+  if (user.role !== role) {
+    return res.status(400).json({  message: `This email is already registered as ${user.role}` });
+  }
+}
 
   // Remove old OTPs for this email
   await Otp.deleteMany({ email: user.email });
@@ -185,6 +199,7 @@ exports.login = async (req, res) => {
     return res.status(500).json({ message: 'Failed to send OTP' });
   }
 };
+
 
 // Verify login: create JWT after OTP check
 exports.verifyLogin = async (req, res) => {
