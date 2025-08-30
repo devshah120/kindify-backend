@@ -35,19 +35,31 @@ exports.createPost = async (req, res) => {
 
 exports.getPosts = async (req, res) => {
   try {
-    let { page = 1, limit = 10 } = req.query;
+    let { page = 1, limit = 10, query } = req.query;
 
     page = parseInt(page);
     limit = parseInt(limit);
     const skip = (page - 1) * limit;
 
-    const posts = await Post.find({})
-      .select('name location picture likedBy') // only required fields
+    // Build filter condition
+    let filter = {};
+    if (query) {
+      filter = {
+        $or: [
+          { name: { $regex: query, $options: 'i' } },
+          { location: { $regex: query, $options: 'i' } }
+        ]
+      };
+    }
+
+    // Fetch posts with optional filter
+    const posts = await Post.find(filter)
+      .select('name location picture likedBy')
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit);
 
-    const totalPosts = await Post.countDocuments();
+    const totalPosts = await Post.countDocuments(filter);
 
     res.status(200).json({
       success: true,
@@ -62,3 +74,6 @@ exports.getPosts = async (req, res) => {
     res.status(500).json({ success: false, message: 'Server error' });
   }
 };
+
+
+
