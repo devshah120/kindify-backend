@@ -1,5 +1,6 @@
 const Post = require('../models/Post');
 
+// Create Post
 exports.createPost = async (req, res) => {
   try {
     const { name, location } = req.body;
@@ -31,8 +32,7 @@ exports.createPost = async (req, res) => {
   }
 };
 
-
-
+// Get Posts with likes and saves info
 exports.getPosts = async (req, res) => {
   try {
     let { page = 1, limit = 10, query } = req.query;
@@ -41,7 +41,6 @@ exports.getPosts = async (req, res) => {
     limit = parseInt(limit);
     const skip = (page - 1) * limit;
 
-    // Build filter condition
     let filter = {};
     if (query) {
       filter = {
@@ -52,21 +51,33 @@ exports.getPosts = async (req, res) => {
       };
     }
 
-    // Fetch posts with optional filter
     const posts = await Post.find(filter)
-      .select('name location picture likedBy')
+      .select('name location picture likedBy savedBy')
       .sort({ createdAt: -1 })
       .skip(skip)
-      .limit(limit);
+      .limit(limit)
+      .populate('likedBy', 'id name')   // Populate likedBy user info
+      .populate('savedBy', 'id name');  // Populate savedBy user info
 
     const totalPosts = await Post.countDocuments(filter);
+
+    const postsWithCounts = posts.map(post => ({
+      _id: post._id,
+      name: post.name,
+      location: post.location,
+      picture: post.picture,
+      likedBy: post.likedBy,             // Array of users who liked
+      savedBy: post.savedBy,             // Array of users who saved
+      totalLikes: post.likedBy.length,
+      totalSaves: post.savedBy.length
+    }));
 
     res.status(200).json({
       success: true,
       currentPage: page,
       totalPages: Math.ceil(totalPosts / limit),
       totalPosts,
-      posts
+      posts: postsWithCounts
     });
 
   } catch (error) {
@@ -76,4 +87,78 @@ exports.getPosts = async (req, res) => {
 };
 
 
+// Like a Post
+exports.likePost = async (req, res) => {
+  try {
+    const { postId } = req.body;
+    const userId = req.user.id;
 
+    const post = await Post.findById(postId);
+    if (!post) return res.status(404).json({ message: 'Post not found' });
+
+    if (!post.likedBy.includes(userId)) {
+      post.likedBy.push(userId);
+      await post.save();
+    }
+
+    res.json({ success: true, message: 'Post liked successfully', totalLikes: post.likedBy.length });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+// Unlike a Post
+exports.unlikePost = async (req, res) => {
+  try {
+    const { postId } = req.body;
+    const userId = req.user.id;
+
+    const post = await Post.findById(postId);
+    if (!post) return res.status(404).json({ message: 'Post not found' });
+
+    post.likedBy = post.likedBy.filter(id => id.toString() !== userId);
+    await post.save();
+
+    res.json({ success: true, message: 'Post unliked successfully', totalLikes: post.likedBy.length });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+// Save a Post
+exports.savePost = async (req, res) => {
+  try {
+    const { postId } = req.body;
+    const userId = req.user.id;
+
+    const post = await Post.findById(postId);
+    if (!post) return res.status(404).json({ message: 'Post not found' });
+
+    if (!post.savedBy.includes(userId)) {
+      post.savedBy.push(userId);
+      await post.save();
+    }
+
+    res.json({ success: true, message: 'Post saved successfully', totalSaves: post.savedBy.length });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+// Unsave a Post
+exports.unsavePost = async (req, res) => {
+  try {
+    const { postId } = req.body;
+    const userId = req.user.id;
+
+    const post = await Post.findById(postId);
+    if (!post) return res.status(404).json({ message: 'Post not found' });
+
+    post.savedBy = post.savedBy.filter(id => id.toString() !== userId);
+    await post.save();
+
+    res.json({ success: true, message: 'Post unsaved successfully', totalSaves: post.savedBy.length });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error' });
+  }
+};
