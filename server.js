@@ -8,6 +8,8 @@ const authRoutes = require('./routes/authRoutes');
 const profileRoutes = require('./routes/profileRoutes');
 const postRoutes = require('./routes/postRoutes');
 const storyRoutes = require('./routes/storyRoutes'); 
+const contactRoutes = require('./routes/contactRoutes');
+const volunteerRoutes = require('./routes/volunteerRoutes');
 
 const app = express();
 app.use(bodyParser.json());
@@ -31,6 +33,8 @@ app.use('/auth', authRoutes);
 app.use('/api', profileRoutes);
 app.use('/api', postRoutes);
 app.use('/api', storyRoutes);
+app.use('/api', contactRoutes);
+app.use('/api', volunteerRoutes);
 
 app.use((req, res) => res.status(404).json({ message: 'Not found' }));
 
