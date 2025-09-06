@@ -230,3 +230,14 @@ exports.verifyLogin = async (req, res) => {
     user: { email: user.email, role: user.role }
   });
 };
+
+
+exports.getAllTrusts = async (req, res) => {
+  try {
+    const trusts = await User.find({ role: 'Trust' }).select('trustName -_id');
+    return res.json({ trusts });
+  } catch (err) {
+    console.error('getAllTrusts error:', err);
+    return res.status(500).json({ message: 'Failed to fetch trusts' });
+  }
+};

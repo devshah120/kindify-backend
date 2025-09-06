@@ -8,4 +8,5 @@ const upload = require('../config/multer');
 router.post('/login', authController.login);                  // body: { emailOrMobile }
 router.post('/verify-login', authController.verifyLogin);     // body: { email, otp }
 router.post('/trust/register', upload.single('darpanCertificate'), authController.registerTrust);
+router.get('/trust/all', authController.getAllTrusts);
 module.exports = router;
