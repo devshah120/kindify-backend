@@ -234,7 +234,7 @@ exports.verifyLogin = async (req, res) => {
 
 exports.getAllTrusts = async (req, res) => {
   try {
-    const trusts = await User.find({ role: 'Trust' }).select('trustName -_id');
+    const trusts = await User.find({ role: 'Trust' }).select('trustName _id'); // include _id
     return res.json({ trusts });
   } catch (err) {
     console.error('getAllTrusts error:', err);
