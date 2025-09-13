@@ -11,7 +11,7 @@ const storyRoutes = require('./routes/storyRoutes');
 const contactRoutes = require('./routes/contactRoutes');
 const volunteerRoutes = require('./routes/volunteerRoutes');
 const categoryRoutes = require('./routes/categoryRoutes');
-
+const DonationRoutes = require('./routes/donationRoutes');
 const app = express();
 app.use(bodyParser.json());
 
@@ -37,7 +37,7 @@ app.use('/api', storyRoutes);
 app.use('/api', contactRoutes);
 app.use('/api', volunteerRoutes);
 app.use('/api', categoryRoutes);
-
+app.use('/api/Donations', DonationRoutes);
 app.use((req, res) => res.status(404).json({ message: 'Not found' }));
 
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

@@ -1,11 +1,11 @@
 const mongoose = require('mongoose');
 
 const categorySchema = new mongoose.Schema({
-    donationValue: { type: Number, required: true },
-    previousValue: { type: Number, required: true },
-    minValue: { type: Number, required: true },
-    maxValue: { type: Number, required: true },
-    selectedDate: { type: Date }
+  name: { type: String, required: true },
+  icon: { type: String, required: true },
 }, { timestamps: true });
 
-module.exports = mongoose.model('Category', categorySchema);
+const Category = mongoose.model('Category', categorySchema);
+const SpecialCategory = mongoose.model('SpecialCategory', categorySchema);
+
+module.exports = { Category, SpecialCategory };
