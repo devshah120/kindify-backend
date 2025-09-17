@@ -227,10 +227,9 @@ exports.verifyLogin = async (req, res) => {
   return res.json({
     message: 'Login successful',
     token,
-    user: { email: user.email, role: user.role }
+    user: { id: user._id, email: user.email, role: user.role }
   });
 };
-
 
 exports.getAllTrusts = async (req, res) => {
   try {
