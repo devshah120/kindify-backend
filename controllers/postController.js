@@ -9,16 +9,16 @@ exports.createPost = async (req, res) => {
       return res.status(400).json({ message: 'Name and location are required' });
     }
 
-    // Picture from multer upload
-    let picture = null;
-    if (req.file) {
-      picture = `/uploads/posts/${req.file.filename}`;
+    // Handle multiple images (max 5)
+    let pictures = [];
+    if (req.files && req.files.length > 0) {
+      pictures = req.files.map(file => `/uploads/posts/${file.filename}`);
     }
 
     const newPost = await Post.create({
       name,
       location,
-      picture,
+      pictures,  // store array of images
       createdBy: req.user.id // assuming JWT middleware adds `req.user`
     });
 
